@@ -207,7 +207,7 @@ class SoftQNetwork(nn.Module):
         
 
 ENV = ['Pendulum', 'Reacher'][0]
-env = NormalizedActions(gym.make("Pendulum-v0"))  # VibrationEnv  Pendulum
+env = NormalizedActions(gym.make("VibrationEnv-v0"))  # VibrationEnv  Pendulum
 action_dim = env.action_space.shape[0]
 state_dim  = env.observation_space.shape[0]
 
@@ -495,11 +495,11 @@ elif ENV == 'Pendulum':
 action_range=1.
 
 # hyper-parameters for RL training
-max_episodes  = 5000
+max_episodes  = 10000
 # max_steps   = 20 if ENV ==  'Reacher' else 150  # Pendulum needs 150 steps per episode to learn well, cannot handle 20
-max_steps = 150
+max_steps = 500   #150
 frame_idx   = 0
-batch_size  = 256  #256
+batch_size  = 1000  #256
 explore_steps = 200  # for random action sampling in the beginning of training
 update_itr = 1
 AUTO_ENTROPY=True
@@ -555,13 +555,13 @@ if __name__ == '__main__':
                     break
 
             if eps % 20 == 0 and eps>0: # plot and model saving interval
-                # plot(rewards)
+                plot(rewards)
                 sac_trainer.save_model(model_path)
-            print('Episode: ', eps, '| Episode Reward: ', episode_reward)
+            # print('Episode: ', eps, '| Episode Reward: ', episode_reward)
 
-            # print("the eps is {}, the t is {}, Episode Reward {}, NoiseAmplitude: {}, VibrationAmplitude: {}, input: {}"\
-            #     .format(eps, max_steps, episode_reward, info['NoiseAmplitude'], info['VibrationAmplitude'], info['input'] ))           
-            # writer.add_scalar('Rewards/ep_r', episode_reward, global_step=eps)
+            print("the eps is {}, the t is {}, Episode Reward {}, NoiseAmplitude: {}, VibrationAmplitude: {}, input: {}"\
+                .format(eps, max_steps, episode_reward, info['NoiseAmplitude'], info['VibrationAmplitude'], info['input'] ))           
+            writer.add_scalar('Rewards/ep_r', episode_reward, global_step=eps)
 
 
             rewards.append(episode_reward)
