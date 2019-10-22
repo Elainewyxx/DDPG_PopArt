@@ -11,7 +11,7 @@ torch.cuda.current_device()
 torch.cuda._initialized = True
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-device = 'cpu'
+# device = 'cpu'
 
 
 def RMSELoss(yhat, y):

@@ -2,7 +2,7 @@ import torch
 import pickle
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-device = 'cpu'
+# device = 'cpu'
 
 class LowerLayers(torch.nn.Module):
     def __init__(self, n_in, H):
