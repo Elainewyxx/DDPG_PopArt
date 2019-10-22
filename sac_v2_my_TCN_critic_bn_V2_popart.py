@@ -499,7 +499,7 @@ max_episodes  = 5000
 # max_steps   = 20 if ENV ==  'Reacher' else 150  # Pendulum needs 150 steps per episode to learn well, cannot handle 20
 max_steps = 150
 frame_idx   = 0
-batch_size  = 128  #255
+batch_size  = 64  #256
 explore_steps = 200  # for random action sampling in the beginning of training
 update_itr = 1
 AUTO_ENTROPY=True
