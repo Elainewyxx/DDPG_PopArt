@@ -7,18 +7,24 @@ import argparse
 import os
 
 
+torch.cuda.current_device()
+torch.cuda._initialized = True
+
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+device = 'cpu'
 
 
 def RMSELoss(yhat, y):
     return torch.sqrt(torch.mean((yhat-y)**2))
 
 
-class PopArt:
+class PopArt(torch.nn.Module):
     def __init__(self, mode, LowerLayers, n_in, H, n_out, lr, beta=None):
+        super(PopArt, self).__init__()
         self.mode = mode.upper()
         assert self.mode in ['SGD', 'ART', 'POPART'], "Please select mode from 'SGD', 'Art' or 'PopArt'."
         self.lower_layers = LowerLayers
-        self.upper_layer  = UpperLayer(H, n_out)
+        self.upper_layer  = UpperLayer(H, n_out).to(device)
         self.sigma = torch.tensor(1., dtype=torch.float)  # consider scalar first
         self.sigma_new = None
         self.mu = torch.tensor(0., dtype=torch.float)
@@ -59,7 +65,8 @@ class PopArt:
     def backward(self):
         self.opt_lower.zero_grad()
         self.opt_upper.zero_grad()
-        self.loss.backward(retain_graph=True)
+        # self.loss.backward(retain_graph=True)
+        self.loss.backward()
 
     def step(self):
         self.opt_lower.step()
@@ -88,7 +95,10 @@ class PopArt:
         y_pred = self.upper_layer(self.lower_layers(x, u))
 
         self.loss = 0.5 * self.loss_func(y_pred, self.normalize(y))
-
+        # self.loss = 0.5 * self.loss_func(y_pred.float(), self.normalize(y).float())
+        # self.loss = torch.tensor(self.loss, dtype=torch.float, requires_grad = True) 
+        # .clone().detach()
+        self.loss = self.loss.clone().detach().requires_grad_(True)
         self.backward()
         self.step()
         # print('#########')
