@@ -38,7 +38,7 @@ from Agent import PopArt
 # else:
 #     device = torch.device("cpu")
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-# device = 'cpu'
+device = 'cpu'
 print(device)
 
 
@@ -349,8 +349,8 @@ class SAC_Trainer():
         print('Policy Network: ', self.policy_net)
 
 
-        self.agent_PopArt1 = PopArt('POPART', self.soft_q_net1, state_dim + action_dim, 1, 1, lr, beta).to(device) 
-        self.agent_PopArt2 = PopArt('POPART', self.soft_q_net2, state_dim + action_dim, 1, 1, lr, beta).to(device) 
+        self.agent_PopArt1 = PopArt('POPART', self.soft_q_net1, state_dim + action_dim, 1, 1, lr, beta)
+        self.agent_PopArt2 = PopArt('POPART', self.soft_q_net2, state_dim + action_dim, 1, 1, lr, beta)
 
 
         for target_param, param in zip(self.target_soft_q_net1.parameters(), self.soft_q_net1.parameters()):
