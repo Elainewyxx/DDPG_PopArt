@@ -216,7 +216,7 @@ from TCN.tcn import TemporalConvNet
 input_channels = state_dim
 output_channels = action_dim
 # num_channels = [30, 30, 30, 30, 30, 30, 30, 30]
-num_channels = [32, 32]
+num_channels = [8, 8]
 kernel_size = 7
 state_batch = 1
 state_seq_len = 1
@@ -509,7 +509,7 @@ explore_steps = 200  # for random action sampling in the beginning of training
 update_itr = 1
 AUTO_ENTROPY=True
 DETERMINISTIC=False
-hidden_dim = 128  # 512
+hidden_dim = 64  # 512
 rewards     = []
 # model_path = './model'
 model_path = './model_popart'
