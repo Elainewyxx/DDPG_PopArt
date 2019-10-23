@@ -216,7 +216,7 @@ from TCN.tcn import TemporalConvNet
 input_channels = state_dim
 output_channels = action_dim
 # num_channels = [30, 30, 30, 30, 30, 30, 30, 30]
-num_channels = [256, 256]
+num_channels = [32, 32]
 kernel_size = 7
 state_batch = 1
 state_seq_len = 1
@@ -502,14 +502,14 @@ action_range=1.
 # hyper-parameters for RL training
 max_episodes  = 10000
 # max_steps   = 20 if ENV ==  'Reacher' else 150  # Pendulum needs 150 steps per episode to learn well, cannot handle 20
-max_steps = 20   #150
+max_steps = 150   #150
 frame_idx   = 0
-batch_size  = 4  #256
+batch_size  = 256  #256
 explore_steps = 200  # for random action sampling in the beginning of training
 update_itr = 1
 AUTO_ENTROPY=True
 DETERMINISTIC=False
-hidden_dim = 512
+hidden_dim = 128  # 512
 rewards     = []
 # model_path = './model'
 model_path = './model_popart'
