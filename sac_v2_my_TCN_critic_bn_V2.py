@@ -560,7 +560,7 @@ if __name__ == '__main__':
 
             state =  env.reset()
             episode_reward = 0
-            for step in range(10*max_steps):   #max_steps
+            for step in range(1*max_steps):   #max_steps
                 action = sac_trainer.policy_net.get_action(state, deterministic = DETERMINISTIC)
                 # if ENV ==  'Reacher':
                 #     next_state, reward, done, _ = env.step(action, SPARSE_REWARD, SCREEN_SHOT)

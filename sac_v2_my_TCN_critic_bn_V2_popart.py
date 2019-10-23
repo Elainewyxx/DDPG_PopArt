@@ -38,7 +38,7 @@ from Agent import PopArt
 # else:
 #     device = torch.device("cpu")
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-device = 'cpu'
+# device = 'cpu'
 print(device)
 
 
@@ -207,7 +207,7 @@ class SoftQNetwork(nn.Module):
         
 
 ENV = ['Pendulum', 'Reacher'][0]
-env = NormalizedActions(gym.make("VibrationEnv-v0"))  # VibrationEnv  Pendulum
+env = NormalizedActions(gym.make("Pendulum-v0"))  # VibrationEnv  Pendulum
 action_dim = env.action_space.shape[0]
 state_dim  = env.observation_space.shape[0]
 
@@ -349,8 +349,12 @@ class SAC_Trainer():
         print('Policy Network: ', self.policy_net)
 
 
-        self.agent_PopArt1 = PopArt('POPART', self.soft_q_net1, state_dim + action_dim, 1, 1, lr, beta)
-        self.agent_PopArt2 = PopArt('POPART', self.soft_q_net2, state_dim + action_dim, 1, 1, lr, beta)
+        self.soft_q_net1_PopArt1 = PopArt('POPART', self.soft_q_net1, state_dim + action_dim, 1, 1, lr, beta)
+        self.soft_q_net2_PopArt2 = PopArt('POPART', self.soft_q_net2, state_dim + action_dim, 1, 1, lr, beta)
+
+        self.target_soft_q_net1_PopArt1 = PopArt('POPART', self.target_soft_q_net1, state_dim + action_dim, 1, 1, lr, beta)
+        self.target_soft_q_net2_PopArt2 = PopArt('POPART', self.target_soft_q_net2, state_dim + action_dim, 1, 1, lr, beta)
+
 
 
         for target_param, param in zip(self.target_soft_q_net1.parameters(), self.soft_q_net1.parameters()):
@@ -358,14 +362,14 @@ class SAC_Trainer():
         for target_param, param in zip(self.target_soft_q_net2.parameters(), self.soft_q_net2.parameters()):
             target_param.data.copy_(param.data)
 
-        # self.soft_q_criterion1 = nn.MSELoss()
-        # self.soft_q_criterion2 = nn.MSELoss()
+        self.soft_q_criterion1 = nn.MSELoss()
+        self.soft_q_criterion2 = nn.MSELoss()
 
         soft_q_lr = 3e-4
         policy_lr = 3e-4
         alpha_lr  = 3e-4
 
-        # self.soft_q_optimizer1 = optim.Adam(self.soft_q_net1.parameters(), lr=soft_q_lr)
+        self.soft_q_optimizer1 = optim.Adam(self.soft_q_net1.parameters(), lr=soft_q_lr)
         self.soft_q_optimizer2 = optim.Adam(self.soft_q_net2.parameters(), lr=soft_q_lr)
         self.policy_optimizer = optim.Adam(self.policy_net.parameters(), lr=policy_lr)
         self.alpha_optimizer = optim.Adam([self.log_alpha], lr=alpha_lr)
@@ -405,17 +409,18 @@ class SAC_Trainer():
         # q_value_loss1 = self.soft_q_criterion1(predicted_q_value1, target_q_value.detach())  # detach: no gradients for the variable
         # q_value_loss2 = self.soft_q_criterion2(predicted_q_value2, target_q_value.detach())
 
-        _ , _ = self.agent_PopArt1.forward(state, action,  target_q_value)
+        q_value_loss1 , _ = self.soft_q_net1_PopArt1.forward(state, action,  target_q_value)
+        q_value_loss2 , _ = self.soft_q_net1_PopArt1.forward(state, action,  target_q_value)
 
-        _ , _ = self.agent_PopArt2.forward(state, action,  target_q_value)
+        # print('q_value_loss1: {}, q_value_loss2: {}'.format(q_value_loss1, q_value_loss2))
 
-
-        # self.soft_q_optimizer1.zero_grad()
-        # q_value_loss1.backward()
-        # self.soft_q_optimizer1.step()
-        # self.soft_q_optimizer2.zero_grad()
-        # q_value_loss2.backward()
-        # self.soft_q_optimizer2.step()  
+        # print('hello world')
+        self.soft_q_optimizer1.zero_grad()
+        q_value_loss1.backward()
+        self.soft_q_optimizer1.step()
+        self.soft_q_optimizer2.zero_grad()
+        q_value_loss2.backward()
+        self.soft_q_optimizer2.step()  
 
     # Training Policy Function
         predicted_new_q_value = torch.min(self.soft_q_net1(state, new_action),self.soft_q_net2(state, new_action))
@@ -497,16 +502,17 @@ action_range=1.
 # hyper-parameters for RL training
 max_episodes  = 10000
 # max_steps   = 20 if ENV ==  'Reacher' else 150  # Pendulum needs 150 steps per episode to learn well, cannot handle 20
-max_steps = 500   #150
+max_steps = 150   #150
 frame_idx   = 0
-batch_size  = 1000  #256
+batch_size  = 256  #256
 explore_steps = 200  # for random action sampling in the beginning of training
 update_itr = 1
 AUTO_ENTROPY=True
 DETERMINISTIC=False
 hidden_dim = 512
 rewards     = []
-model_path = './model'
+# model_path = './model'
+model_path = './model_popart'
 
 sac_trainer=SAC_Trainer(replay_buffer, hidden_dim=hidden_dim, action_range=action_range  )
 
@@ -541,6 +547,7 @@ if __name__ == '__main__':
                 frame_idx += 1
 
 
+                # print(eps, end='')
 
                 # writer.add_scalar('Rewards/NoiseAmplitude', info['NoiseAmplitude'], frame_idx)
                 # writer.add_scalar('Rewards/VibrationAmplitude', info['VibrationAmplitude'], frame_idx)
@@ -557,11 +564,11 @@ if __name__ == '__main__':
             if eps % 20 == 0 and eps>0: # plot and model saving interval
                 plot(rewards)
                 sac_trainer.save_model(model_path)
-            # print('Episode: ', eps, '| Episode Reward: ', episode_reward)
+            print('Episode: ', eps, '| Episode Reward: ', episode_reward)
 
-            print("the eps is {}, the t is {}, Episode Reward {}, NoiseAmplitude: {}, VibrationAmplitude: {}, input: {}"\
-                .format(eps, max_steps, episode_reward, info['NoiseAmplitude'], info['VibrationAmplitude'], info['input'] ))           
-            writer.add_scalar('Rewards/ep_r', episode_reward, global_step=eps)
+            # print("the eps is {}, the t is {}, Episode Reward {}, NoiseAmplitude: {}, VibrationAmplitude: {}, input: {}"\
+            #     .format(eps, max_steps, episode_reward, info['NoiseAmplitude'], info['VibrationAmplitude'], info['input'] ))           
+            # writer.add_scalar('Rewards/ep_r', episode_reward, global_step=eps)
 
 
             rewards.append(episode_reward)

@@ -6,12 +6,14 @@ import time
 import argparse
 import os
 
+# from DDPG_PopArt.sac_v2_my_TCN_critic_bn_V2_popart import device
+# from sac_v2_my_TCN_critic_bn_V2_popart import device
 
 torch.cuda.current_device()
 torch.cuda._initialized = True
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-device = 'cpu'
+# device = 'cpu'
 
 
 def RMSELoss(yhat, y):
@@ -35,7 +37,7 @@ class PopArt(torch.nn.Module):
         self.lr = lr
         self.loss_func = torch.nn.MSELoss()
         self.loss = None
-        self.opt_lower = torch.optim.SGD(self.lower_layers.parameters(), self.lr)
+        # self.opt_lower = torch.optim.SGD(self.lower_layers.parameters(), self.lr)
         self.opt_upper = torch.optim.SGD(self.upper_layer.parameters(), self.lr)
 
 
@@ -64,13 +66,13 @@ class PopArt(torch.nn.Module):
         return self.sigma * y + self.mu
 
     def backward(self):
-        self.opt_lower.zero_grad()
+        # self.opt_lower.zero_grad()
         self.opt_upper.zero_grad()
-        # self.loss.backward(retain_graph=True)
-        self.loss.backward()
+        self.loss.backward(retain_graph=True)
+        # self.loss.backward()
 
     def step(self):
-        self.opt_lower.step()
+        # self.opt_lower.step()
         self.opt_upper.step()
 
     # def forward(self, x, y):

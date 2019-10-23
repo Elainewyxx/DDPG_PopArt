@@ -1,8 +1,10 @@
 import torch
 import pickle
 
+# from DDPG_PopArt.sac_v2_my_TCN_critic_bn_V2_popart import device
+# from sac_v2_my_TCN_critic_bn_V2_popart import device
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-device = 'cpu'
+# device = 'cpu'
 
 class LowerLayers(torch.nn.Module):
     def __init__(self, n_in, H):
