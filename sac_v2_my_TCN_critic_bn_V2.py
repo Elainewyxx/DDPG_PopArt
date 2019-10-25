@@ -495,6 +495,8 @@ sac_trainer=SAC_Trainer(replay_buffer, hidden_dim=hidden_dim, action_range=actio
 from torch.utils.tensorboard import SummaryWriter
 writer = SummaryWriter()
 
+
+
 if __name__ == '__main__':
     if args.train:
         # training loop
@@ -551,6 +553,11 @@ if __name__ == '__main__':
 
     if args.test:
         sac_trainer.load_model(model_path)
+
+        env_id = 'VibrationEnv-v0'
+
+
+
         for eps in range(10):
             # if ENV == 'Reacher':
             #     state = env.reset(SCREEN_SHOT)
@@ -558,9 +565,12 @@ if __name__ == '__main__':
             #     state =  env.reset()
             # episode_reward = 0
 
+            eval_states = []
+            episodes =[]
+
             state =  env.reset()
             episode_reward = 0
-            for step in range(1*max_steps):   #max_steps
+            for step in range(int(1*2*max_steps)):   #max_steps
                 action = sac_trainer.policy_net.get_action(state, deterministic = DETERMINISTIC)
                 # if ENV ==  'Reacher':
                 #     next_state, reward, done, _ = env.step(action, SPARSE_REWARD, SCREEN_SHOT)
@@ -575,9 +585,83 @@ if __name__ == '__main__':
                 episode_reward += reward
                 state=next_state
 
+                episodes.append(env.counts)
+                eval_states.append(state)
+
             # print('Episode: ', eps, '| Episode Reward: ', episode_reward)
 
 
             print("the eps is {}, the t is {}, Episode Reward {}, NoiseAmplitude: {}, VibrationAmplitude: {}, input: {}"\
                 .format(eps, max_steps, episode_reward, info['NoiseAmplitude'], info['VibrationAmplitude'], info['input'] ))           
 
+           
+            episodes = np.array(episodes)
+            eval_states = np.array(eval_states)
+
+            # from matplotlib import pylab
+            # plt = pylab
+            fig = plt.figure("VibrationEnv-states")
+            plt.subplot(221)
+            legends = [r'$x_1(t)$', r'$x_2(t)$', r'$x_3(t)$', r'$x_4(t)$', r'$x1cc(t)$', r'$x2cc(t)$']
+            # fig = plt.figure("VibrationEnv-states")
+            # plt.plot(episodes, eval_states[:,:2])
+            plt.plot(episodes, eval_states[:,:6])
+            plt.title("%s"%env_id)
+            plt.xlabel("Episode")
+            plt.ylabel("eval_states")
+            plt.legend(legends)
+            # plt.show()
+
+            plt.subplot(222)
+            legends = [r'$x_1(t)$', r'$x_2(t)$']
+            # fig = plt.figure("VibrationEnv-states")
+            # plt.plot(episodes, eval_states[:,:2])
+            plt.plot(episodes, eval_states[:,:2])
+            plt.title("%s"%env_id)
+            plt.xlabel("Episode")
+            plt.ylabel("eval_states")
+            plt.legend(legends)
+            # plt.show()
+
+            plt.subplot(223)
+            legends = [r'$x_3(t)$', r'$x_4(t)$']
+            # fig = plt.figure("VibrationEnv-states")
+            # plt.plot(episodes, eval_states[:,:2])
+            plt.plot(episodes, eval_states[:,2:4])
+            plt.title("%s"%env_id)
+            plt.xlabel("Episode")
+            plt.ylabel("eval_states")
+            plt.legend(legends)
+            # plt.show()
+
+
+            plt.subplot(224)
+            legends = [r'$x_5(t)$', r'$x_6(t)$']
+            # fig = plt.figure("VibrationEnv-states")
+            # plt.plot(episodes, eval_states[:,:2])
+            plt.plot(episodes, eval_states[:,4:6])
+            plt.title("%s"%env_id)
+            plt.xlabel("Episode")
+            plt.ylabel("eval_states")
+            plt.legend(legends)
+
+            plt.grid()
+            # plt.savefig('predict%d.pdf'%i)
+            # plt.savefig('./output/predict{}.pdf'.format(eps+1))
+            # plt.close()
+            # # pylab.get_current_fig_manager().window.showMaximized()
+            # pylab.get_current_fig_manager().showMaximized()
+            # # pylab.get_current_fig_manager
+
+            wm = plt.get_current_fig_manager()
+            wm.window.state('zoomed')
+
+
+            plt.savefig('./output/predict{}.pdf'.format(eps+1))
+            plt.close()
+
+            # plt.show()
+
+
+
+        env.close()
