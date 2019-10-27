@@ -488,7 +488,8 @@ AUTO_ENTROPY=True
 DETERMINISTIC=False
 hidden_dim = 512
 rewards     = []
-model_path = './model/sac_v2'
+# model_path = './model/sac_v2'
+model_path = './model3/sac_v2'
 
 sac_trainer=SAC_Trainer(replay_buffer, hidden_dim=hidden_dim, action_range=action_range  )
 
@@ -568,9 +569,13 @@ if __name__ == '__main__':
             eval_states = []
             episodes =[]
 
+            eval_BottomLayerForce = []
+            eval_BottomLayerForceRate = []
+
+
             state =  env.reset()
             episode_reward = 0
-            for step in range(int(1*2*max_steps)):   #max_steps
+            for step in range(int(0.5*2*max_steps)):   #max_steps
                 action = sac_trainer.policy_net.get_action(state, deterministic = DETERMINISTIC)
                 # if ENV ==  'Reacher':
                 #     next_state, reward, done, _ = env.step(action, SPARSE_REWARD, SCREEN_SHOT)
@@ -588,21 +593,32 @@ if __name__ == '__main__':
                 episodes.append(env.counts)
                 eval_states.append(state)
 
+                eval_BottomLayerForce.append(info['BottomLayerForce'])
+                eval_BottomLayerForceRate.append(info['BottomLayerForceRate'])
+        
+
             # print('Episode: ', eps, '| Episode Reward: ', episode_reward)
 
 
-            print("the eps is {}, the t is {}, Episode Reward {}, NoiseAmplitude: {}, VibrationAmplitude: {}, input: {}"\
-                .format(eps, max_steps, episode_reward, info['NoiseAmplitude'], info['VibrationAmplitude'], info['input'] ))           
+            print("the eps is {}, the t is {}, Episode Reward {}, NoiseAmplitude: {}, VibrationAmplitude: {}, input: {},\
+                 BottomLayerForceRate: {}"  \
+                .format(eps, max_steps, episode_reward, info['NoiseAmplitude'], info['VibrationAmplitude'], info['input'],\
+                 info['BottomLayerForceRate']  \
+                     ))           
 
            
             episodes = np.array(episodes)
             eval_states = np.array(eval_states)
 
+            eval_BottomLayerForce = np.array(eval_BottomLayerForce)
+            eval_BottomLayerForceRate = np.array(eval_BottomLayerForceRate)
+
             # from matplotlib import pylab
             # plt = pylab
             fig = plt.figure("VibrationEnv-states")
             plt.subplot(221)
-            legends = [r'$x_1(t)$', r'$x_2(t)$', r'$x_3(t)$', r'$x_4(t)$', r'$x1cc(t)$', r'$x2cc(t)$']
+            # legends = [r'$x_1(t)$', r'$x_2(t)$', r'$x_3(t)$', r'$x_4(t)$', r'$x1cc(t)$', r'$x2cc(t)$']
+            legends = [r'$x_1(t)$', r'$x_2(t)$', r'$x_3(t)$', r'$x_4(t)$', r'$x_5(t)$', r'$x_6(t)$']
             # fig = plt.figure("VibrationEnv-states")
             # plt.plot(episodes, eval_states[:,:2])
             plt.plot(episodes, eval_states[:,:6])
@@ -611,6 +627,7 @@ if __name__ == '__main__':
             plt.ylabel("eval_states")
             plt.legend(legends)
             # plt.show()
+            plt.grid()
 
             plt.subplot(222)
             legends = [r'$x_1(t)$', r'$x_2(t)$']
@@ -622,6 +639,7 @@ if __name__ == '__main__':
             plt.ylabel("eval_states")
             plt.legend(legends)
             # plt.show()
+            plt.grid()
 
             plt.subplot(223)
             legends = [r'$x_3(t)$', r'$x_4(t)$']
@@ -633,6 +651,7 @@ if __name__ == '__main__':
             plt.ylabel("eval_states")
             plt.legend(legends)
             # plt.show()
+            plt.grid()
 
 
             plt.subplot(224)
@@ -655,12 +674,34 @@ if __name__ == '__main__':
 
             wm = plt.get_current_fig_manager()
             wm.window.state('zoomed')
-
-
-            plt.savefig('./output/predict{}.pdf'.format(eps+1))
-            plt.close()
-
             # plt.show()
+
+            # plt.savefig('./output/predict{}.pdf'.format(eps+1))
+            # plt.close()
+
+            plt.show()
+
+
+            fig = plt.figure("VibrationEnv-states")
+            plt.subplot(121)
+            legends = [r'$x_7(t)$']
+            plt.plot(episodes, eval_BottomLayerForce)
+            # plt.plot(episodes, eval_BottomLayerForceRate)
+            plt.title("%s"%env_id)
+            plt.xlabel("Episode")
+            plt.ylabel("eval_states")
+            plt.legend(legends)
+
+            plt.subplot(122)
+            legends = [r'$x_8(t)$']
+            # plt.plot(episodes, eval_BottomLayerForce)
+            plt.plot(episodes, eval_BottomLayerForceRate)
+            plt.title("%s"%env_id)
+            plt.xlabel("Episode")
+            plt.ylabel("eval_states")
+            plt.legend(legends)
+
+            plt.show()
 
 
 
